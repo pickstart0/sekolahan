@@ -1,0 +1,16 @@
+* {
+    background-color: black;
+}
+
+.title {
+    color: crimson;
+}
+
+.p1,
+ul>li {
+    color: springgreen;
+}
+
+.p2 {
+    color: white;
+}
