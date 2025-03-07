@@ -14,6 +14,7 @@ if ($transaksiTerbaru['durasi'] > 3) {
 } else {
     $diskon = 0;
 }
+
 ?>
 
 <!DOCTYPE html>
