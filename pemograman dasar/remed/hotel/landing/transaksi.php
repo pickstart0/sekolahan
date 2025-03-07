@@ -1,10 +1,13 @@
 <?php
-require "dummy.php"; // Pastikan file ini berisi array $produk dengan nama & harga kamar
+require "dummy.php"; // File harus berisi array $produk dengan 'nama' dan 'harga'
 session_start();
 
 if (!isset($_SESSION['transaksi'])) {
     $_SESSION['transaksi'] = [];
 }
+
+$hargaKamar = "";
+$total = null;
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $nama = $_POST['nama'];
@@ -16,7 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $breakfast = isset($_POST['breakfast']) ? (int)$_POST['breakfast'] : 0;
 
     // Cari harga berdasarkan tipe kamar yang dipilih
-    $hargaKamar = 0;
     foreach ($produk as $p) {
         if ($p['nama'] == $tipeKamar) {
             $hargaKamar = (int)$p['harga'];
@@ -69,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 <label class="form-label">Nama Pemesan:</label>
                 <input type="text" name="nama" class="form-control" required value="<?= $_POST['nama'] ?? ''; ?>">
             </div>
-
             <div class="mb-3">
                 <label class="form-label">Jenis Kelamin:</label>
                 <div class="d-flex">
@@ -83,44 +84,37 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                     </div>
                 </div>
             </div>
-
             <div class="mb-3">
                 <label class="form-label">Nomor Identitas (16 Digit):</label>
                 <input type="text" name="identitas" maxlength="16" class="form-control" required value="<?= $_POST['identitas'] ?? ''; ?>">
             </div>
-
             <div class="mb-3">
                 <label class="form-label">Tipe Kamar:</label>
-                <select name="tipeKamar" id="tipeKamar" class="form-select" required>
+                <select name="tipeKamar" id="tipeKamar" class="form-select" required onchange="this.form.submit()">
                     <option value="" disabled selected>Pilih Tipe Disini</option>
                     <?php foreach ($produk as $p): ?>
-                        <option value="<?= $p['nama'] ?>" data-harga="<?= $p['harga'] ?>" <?= (isset($_POST['tipeKamar']) && $_POST['tipeKamar'] == $p['nama']) ? 'selected' : ''; ?>>
+                        <option value="<?= $p['nama'] ?>" <?= (isset($_POST['tipeKamar']) && $_POST['tipeKamar'] == $p['nama']) ? 'selected' : ''; ?>>
                             <?= $p['nama'] ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
-
             <div class="mb-3">
                 <label class="form-label">Harga Kamar:</label>
-                <input type="text" id="hargaKamar" class="form-control" readonly>
+                <input type="text" class="form-control" value="<?= $hargaKamar ? 'Rp ' . number_format($hargaKamar, 0, ',', '.') : ''; ?>" readonly>
             </div>
-
             <div class="mb-3">
                 <label class="form-label">Tanggal Pesan:</label>
                 <input type="date" name="tanggalPesan" class="form-control" required value="<?= $_POST['tanggalPesan'] ?? ''; ?>">
             </div>
-
             <div class="mb-3">
                 <label class="form-label">Durasi Menginap (Hari):</label>
                 <input type="number" name="durasi" class="form-control" required value="<?= $_POST['durasi'] ?? ''; ?>">
             </div>
-
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" name="breakfast" value="80000" <?= isset($_POST['breakfast']) ? 'checked' : ''; ?>>
                 <label class="form-check-label">Termasuk Breakfast (+Rp80.000)</label>
             </div>
-
             <div class="d-flex gap-2">
                 <button type="submit" name="hitung" class="btn btn-primary w-50">Hitung Total Bayar</button>
                 <?php if (isset($_POST['hitung']) && strlen($_POST['identitas']) == 16): ?>
@@ -129,22 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 <a href="index.php" class="btn btn-secondary w-50">Cancel</a>
             </div>
         </form>
-
-        <?php if (isset($total)): ?>
+        <?php if (isset($total) && $total != 0): ?>
             <div class='alert alert-success mt-3'>Total Bayar: Rp <?= number_format($total, 0, ',', '.') ?></div>
         <?php endif; ?>
     </div>
-
-    <script>
-        function updateHarga() {
-            let tipeKamar = document.getElementById("tipeKamar");
-            let harga = tipeKamar.options[tipeKamar.selectedIndex].dataset.harga || "";
-            document.getElementById("hargaKamar").value = harga ? `Rp ${new Intl.NumberFormat("id-ID").format(harga)}` : "";
-        }
-
-        document.getElementById("tipeKamar").addEventListener("change", updateHarga);
-        window.onload = updateHarga;
-    </script>
 </body>
 
 </html>
