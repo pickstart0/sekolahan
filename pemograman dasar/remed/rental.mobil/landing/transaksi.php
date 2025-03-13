@@ -6,9 +6,20 @@ if (!isset($_SESSION['transaksi'])) {
     $_SESSION['transaksi'] = [];
 }
 
-$hargaRental = "";
+$id = $_GET['id'] ?? '';
 $total = null;
 $jenisKelamin = "";
+$selectedID = $_POST['tipeMobil'] ?? $_GET['id'] ?? '';
+$hargaRental = 0;
+$pesanEror = "";
+
+// Ambil harga rental dari produk yang dipilih
+foreach ($produk as $p) {
+    if ($p['nama'] == $selectedID) {
+        $hargaRental = (int)$p['harga'];
+        break;
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $nama = $_POST['nama'];
@@ -19,24 +30,22 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $durasi = (int)$_POST['durasi'];
     $supir = isset($_POST['supir']) ? (int)$_POST['supir'] : 0;
 
-    // Cari harga berdasarkan tipe kamar yang dipilih
-    foreach ($produk as $p) {
-        if ($p['nama'] == $tipeMobil) {
-            $hargaRental = (int)$p['harga'];
-            break;
-        }
-    }
-
+    // Menghitung total harga
     $total = $hargaRental * $durasi;
 
-    // Diskon 10% jika menginap lebih dari 3 hari
+    // Diskon 10% jika lebih dari 3 hari
     if ($durasi > 3) {
         $total -= ($total * 0.1);
+    }
+    // jika nomor identitas kurang dari 16 
+    if (strlen($identitas) !== 16) {
+        $pesanEror = "Nomor identitas tidak valid";
     }
 
     // Tambah biaya supir jika dipilih
     $total += ($supir * $durasi);
 
+    // Simpan transaksi jika tombol "Simpan" ditekan
     if (isset($_POST['simpan']) && strlen($identitas) == 16) {
         $_SESSION['transaksi'][] = [
             'nama' => $nama,
@@ -60,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaksi Pemesanan Kamar</title>
+    <title>Transaksi Pemesanan Mobil</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -76,11 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 <label class="form-label">Jenis Kelamin:</label>
                 <div class="d-flex">
                     <div class="form-check me-4">
-                        <input class="form-check-input" type="radio" name="jenisKelamin" value="Laki-laki" required <?= (isset($_POST['jenisKelamin']) && $_POST['jenisKelamin'] == 'Laki-laki') ? 'checked' : ''; ?>>
+                        <input class="form-check-input" type="radio" name="jenisKelamin" value="Laki-laki" required <?= ($jenisKelamin == 'Laki-laki') ? 'checked' : ''; ?>>
                         <label class="form-check-label">Laki-laki</label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="jenisKelamin" value="Perempuan" required <?= (isset($_POST['jenisKelamin']) && $_POST['jenisKelamin'] == 'Perempuan') ? 'checked' : ''; ?>>
+                        <input class="form-check-input" type="radio" name="jenisKelamin" value="Perempuan" required <?= ($jenisKelamin == 'Perempuan') ? 'checked' : ''; ?>>
                         <label class="form-check-label">Perempuan</label>
                     </div>
                 </div>
@@ -90,18 +99,17 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 <input type="text" name="identitas" maxlength="16" class="form-control" required value="<?= $_POST['identitas'] ?? ''; ?>">
             </div>
             <div class="mb-3">
-                <label class="form-label">Tipe Kamar:</label>
-                <select name="tipeMobil" id="tipeMobil" class="form-select" required onchange="this.form.submit()">
-                    <option value="" disabled selected>Pilih Tipe Disini</option>
+                <label class="form-label">Tipe Mobil:</label>
+                <select name="tipeMobil" class="form-select" required onchange="this.form.submit()">
                     <?php foreach ($produk as $p): ?>
-                        <option value="<?= $p['nama'] ?>" <?= (isset($_POST['tipeMobil']) && $_POST['tipeMobil'] == $p['nama']) ? 'selected' : ''; ?>>
+                        <option value="<?= $p['nama'] ?>" <?= ($selectedID == $p['nama']) ? 'selected' : ''; ?>>
                             <?= $p['nama'] ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Harga Kamar:</label>
+                <label class="form-label">Harga Rental:</label>
                 <input type="text" class="form-control" value="<?= $hargaRental ? 'Rp ' . number_format($hargaRental, 0, ',', '.') : ''; ?>" readonly>
             </div>
             <div class="mb-3">
@@ -124,7 +132,10 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 <a href="index.php" class="btn btn-secondary w-50">Cancel</a>
             </div>
         </form>
-        <?php if (isset($total) && $total != 0): ?>
+        <?php if (isset($total) && $pesanEror !== ''): ?>
+            <div class='alert alert-danger mt-3'><?= $pesanEror; ?></div>
+        <?php endif; ?>
+        <?php if (isset($total) && $total != 0 && $pesanEror == ""): ?>
             <div class='alert alert-success mt-3'>Total Bayar: Rp <?= number_format($total, 0, ',', '.') ?></div>
         <?php endif; ?>
     </div>
