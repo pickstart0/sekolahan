@@ -46,6 +46,9 @@
                             <div class="card-footer bg-white border-0">
                                 <p class="card-text">Rp. <?= $p['harga']; ?></p>
                             </div>
+                            <div class="card-footer bg-white border-0">
+                                <a href="transaksi.php?id=<?= $p['nama']; ?>" class="btn btn-info mt-4">Rental Sekarang</a>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -62,7 +65,6 @@
                 <li>Alamat: Jl. Raya No. 123, Jakarta</li>
                 <li>Telepon: +62 21 1234 5678</li>
                 <li>Email: info@hotelxyz.com</li>
-                <li><a href="transaksi.php" class="btn btn-info mt-4">Rental Sekarang</a></li>
             </ul>
         </div>
     </section>
