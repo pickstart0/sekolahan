@@ -1,8 +1,5 @@
 <?php
 require "dummy.php";
-if (!isset($_SESSION['transaksi'])) {
-    $_SESSION['transaksi'] = [];
-}
 
 $id = $_GET['id'] ?? '';
 $total = null;
