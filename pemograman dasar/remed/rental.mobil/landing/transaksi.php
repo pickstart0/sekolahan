@@ -1,7 +1,5 @@
 <?php
 require "dummy.php";
-session_start();
-
 if (!isset($_SESSION['transaksi'])) {
     $_SESSION['transaksi'] = [];
 }
@@ -47,17 +45,19 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
     // Simpan transaksi jika tombol "Simpan" ditekan
     if (isset($_POST['simpan']) && strlen($identitas) == 16) {
-        $_SESSION['transaksi'][] = [
-            'nama' => $nama,
-            'jenisKelamin' => $jenisKelamin,
-            'identitas' => $identitas,
-            'tipeMobil' => $tipeMobil,
-            'tanggalPesan' => $tanggalPesan,
-            'durasi' => $durasi,
-            'supir' => $supir ? 'Ya' : 'Tidak',
-            'totalBayar' => number_format($total, 0, ',', '.')
-        ];
-        header("Location: simpan.php");
+        $transaksi = "Nama : $nama\n" .
+            "JK : $jenisKelamin\n" .
+            "ID : $identitas\n" .
+            "Mobil : $tipeMobil\n" .
+            "Tgl Pesan : $tanggalPesan\n" .
+            "Durasi : {$durasi}h\n" .
+            "Supir : " . ($supir ? 'Ya' : 'Tidak') . "\n" .
+            "Total : Rp " . number_format($total, 0, ',', '.');
+
+        echo "<script>alert(`$transaksi`);
+        window.location.href = 'index.php';
+        </script>";
+
         exit();
     }
 }
@@ -73,10 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
-    <div class="container mt-5">
+<body class="bg-warning"> >
+    <div class="container  mt-5">
         <h2 class="text-center">Form Pemesanan Mobil</h2>
-        <form method="POST" class="p-4 border rounded bg-light">
+        <form method="POST" class="p-4 border rounded bg-warning-subtle">
             <div class="mb-3">
                 <label class="form-label">Nama Pemesan:</label>
                 <input type="text" name="nama" class="form-control" required value="<?= $_POST['nama'] ?? ''; ?>">
@@ -125,11 +125,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 <label class="form-check-label">Termasuk supir (+Rp100.000/hari)</label>
             </div>
             <div class="d-flex gap-2">
-                <button type="submit" name="hitung" class="btn btn-primary w-50">Hitung Total Bayar</button>
+                <button type="submit" name="hitung" class="btn btn-warning w-50">Hitung Total Bayar</button>
                 <?php if (isset($_POST['hitung']) && strlen($_POST['identitas']) == 16): ?>
                     <button type="submit" name="simpan" class="btn btn-success w-50">Simpan Transaksi</button>
                 <?php endif; ?>
-                <a href="index.php" class="btn btn-secondary w-50">Cancel</a>
+                <a href="index.php" class="btn btn-danger w-50">Cancel</a>
             </div>
         </form>
         <?php if (isset($total) && $pesanEror !== ''): ?>
